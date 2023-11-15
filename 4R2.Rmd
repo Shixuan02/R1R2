@@ -1,0 +1,100 @@
+---
+title: "4R2"
+author: "Shixuan Weng"
+date: "2023-11-14"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Assignment 2
+
+### Using the iri dateset
+
+```{r preparation}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r irisubset}
+# Get a subset with STATE_CODE 6 and SHRP_ID starting with 050.
+iri <- read.csv("data_assignment/iri.csv")
+iri_sub_0 <- iri |>
+  filter(STATE_CODE == 6)
+iri_sub_1 <- iri_sub_0 |>
+  filter(grepl('^050', SHRP_ID))
+```
+
+```{r summary statistics}
+# Obtain the summary statistics of IRI of each section: min, max, and mean
+iri_sub_2 <- iri |>
+  group_by( STATE_CODE, SHRP_ID ) |>
+  summarise(
+    observation = n(),
+    iri_max = max(IRI),
+    iri_min = min(IRI),
+    iri_mean = mean(IRI)
+    ) |>
+ungroup()
+```
+
+```{r sort in a descending order}
+# Sort the summarized data by the averaged IRI in a descending order
+iri_sub_3 <- iri |>
+  filter(STATE_CODE == 1 & SHRP_ID == "0107")
+arrange(iri_sub_3, desc(IRI))
+```
+
+```{r scatter plot}
+# Generate a scatter plot
+Date <- as.POSIXct(iri_sub_3$VISIT_DATE, format = "%m/%d/%y, %H:%M:%S")
+iri_sub_3$year <- format(Date, format="%Y")
+plot(x=iri_sub_3$year, y=iri_sub_3$IRI,
+     pch=20, col=adjustcolor("darkblue", 1/2),
+     xlab="Year", ylab="IRI")
+```
+
+#### My interpretation of the plot
+所选择的section的IRI随时间变化的曲线呈倒U形，1994-1997年逐年递减（1995年数据缺失），在1997年达到最低值，随后又逐年递增（2000年数据缺失）。
+
+### Using the CRSS datasets in 2017
+
+```{r crss datapreparation}
+accident <- read.csv("data_assignment/ACCIDENT.csv")
+person <- read.csv("data_assignment/PERSON.csv")
+vehicle <- read.csv("data_assignment/VEHICLE.csv")
+```
+
+```{r crss getintersection}
+# Get the intersection of the datasets accident and person
+intersection <- inner_join(
+  x = accident, y = person,
+  by=c("CASENUM", "PSU")
+)
+```
+
+```{r crss total number}
+# Tabulate the total number of observations in each injury severity (INJ_SEV)
+intersection1 <- intersection |>
+  group_by(INJ_SEV) |>
+  summarise(
+    obsevation = n()
+  )
+```
+
+```{r crss merging}
+acc_veh_left <- left_join(
+  x=accident,
+  y=vehicle,
+  by=c("CASENUM", "PSU") 
+  ) |>
+distinct() # keep only distinctly different rows
+dim(acc_veh_left)
+acc_veh_left %>% summarise_all(funs(sum(is.na(.))))
+```
