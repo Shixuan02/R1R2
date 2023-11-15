@@ -1,0 +1,43 @@
+---
+title: "Assignment 1"
+author: "Shixuan Weng"
+date: "2023-11-13"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Assignment 1
+
+This assignment1 included a function to calculate the mean value of a random numeric vector of length 50 and generating a scatter plot using the plot() function.
+
+### Load your own .csv file into R, report the dimension of your data frame, then generate a scatter plot using the plot() function.
+
+```{r myscatplot, echo=TRUE}
+#绘制某港口货物吞吐量和年份的关系
+library("ggplot2")
+throughput <- read.csv("throughput.csv")
+throughput |> dim()
+plot(x=throughput$year, y=throughput$throughput,
+     pch=20, col=adjustcolor("darkblue", 1/2),
+     xlab="Year", ylab="Cargo throughput (billion tons)")
+```
+
+### Write a loop to calculate the mean value of a random numeric vector of length 50
+
+```{r mean2random}
+mean2 <- function(x){
+  sum <- 0
+  for (i in 1:length(x)){
+    sum <- sum + x[i]
+  }
+  sum/length(x)
+}
+
+vec1 <- rnorm(50)
+mean2(vec1)
+```
